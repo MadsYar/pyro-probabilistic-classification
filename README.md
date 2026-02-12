@@ -2,15 +2,15 @@
 
 ## Overview
 
-This project presents a **model-driven machine learning approach** to classify political tweets as either Republican or Democrat. Rather than using off-the-shelf classifiers, we built custom Bayesian probabilistic models using **Pyro**, a probabilistic programming library built on PyTorch. The work demonstrates how probabilistic modeling can capture uncertainty and complex patterns in social media text data.
+This project presents a model-driven machine learning approach to classify political tweets as either Republican or Democrat. Rather than using off-the-shelf classifiers, some custom Bayesian probabilistic models were built using Pyro. Which is a probabilistic programming library built on PyTorch. The work demonstrates how probabilistic modeling can capture uncertainty and complex patterns in social media text data.
 
-This repository contains a fully runnable Jupyter notebook that implements the entire pipeline: data preprocessing, feature engineering, model design, training via Stochastic Variational Inference (SVI), evaluation, and visualization.
+This repository contains a fully runnable Jupyter notebook that implements the entire pipeline: data preprocessing, feature engineering, model design, training via Stochastic Variational Inference (SVI), evaluation and visualization.
 
 ---
 
 ## Project Motivation
 
-Political discourse on social media is complex and nuanced. Understanding and classifying political opinions requires more than simple keyword matching—it requires models that can learn contextual patterns and capture uncertainty. This project was built to explore whether a custom Bayesian hierarchical model could outperform a traditional Bayesian classifier by explicitly modeling interactions between sentiment, topics, and structural tweet features.
+Political discourse on social media is complex and nuanced. Understanding and classifying political opinions requires more than simple keyword matching—it requires models that can learn contextual patterns and capture uncertainty. This project was built to explore whether a custom Bayesian hierarchical model could outperform a traditional Bayesian classifier by explicitly modeling interactions between sentiment, topics and structural tweet features.
 
 ---
 
@@ -18,7 +18,7 @@ Political discourse on social media is complex and nuanced. Understanding and cl
 
 ### 1. Data Preprocessing
 
-We built a comprehensive preprocessing pipeline that transforms raw tweets into features suitable for probabilistic modeling:
+A preprocessing pipeline that transforms raw tweets into features suitable for probabilistic modeling:
 
 - **Text Cleaning**: Removed URLs, mentions, hashtags, emojis, and non-alphabetic characters. All text converted to lowercase for consistency.
 - **Labeling Strategy**: Used "frequent names" associated with each candidate (e.g., "Trump", "MAGA", "Republican" for Republican tweets, and "Biden", "Sleepy Joe", "Democrat" for Democrat tweets) to automatically label 1.2 million tweets.
@@ -37,7 +37,7 @@ The notebook extracts five complementary feature sets:
 
 ### 3. Models
 
-We implemented and compared two Bayesian models:
+Also implemented and compared two Bayesian models:
 
 #### **Bayesian Logistic Regression (BLR)**
 A traditional probabilistic classifier that serves as a baseline:
@@ -46,7 +46,7 @@ A traditional probabilistic classifier that serves as a baseline:
 - Trained via Stochastic Variational Inference (SVI)
 
 #### **Bayesian Hierarchical Model (BHM)** — Custom Design
-Our original multi-component model that integrates multiple probabilistic sub-models:
+The original multi-component model that integrates multiple probabilistic sub-models:
 
 - **Gaussian Mixture Model (GMM)**: Models the distribution of topic-sentiment features across K=3 clusters
   - Each tweet assigned to a cluster with mixture weights
@@ -63,7 +63,7 @@ Our original multi-component model that integrates multiple probabilistic sub-mo
 - **Final Prediction**: Combines all components:
   $$\text{logits} = \text{logits}_{gmm} + \text{logits}_{lda} + \text{sentiment\_effect} + \text{logits}_{stats} + \text{logits}_{tfidf}$$
 
-The BHM's key innovation is **cross-feature dependencies**—sentiment impact is modulated by topics, and statistical features are combined hierarchically rather than independently.
+The BHM's key innovation is **cross-feature dependencies**—sentiment impact is modulated by topics and statistical features are combined hierarchically rather than independently.
 
 ### 4. Training
 
@@ -95,92 +95,18 @@ Models evaluated on 240,000 test tweets using:
 | **ROC-AUC** | 0.638 | 0.712 |
 | **Confusion Matrix** | Biased toward Democrat | More balanced |
 
-**Key Finding**: While BLR achieved good accuracy on Democrat tweets (80,053/120,000 correct), it struggled with Republican tweets (66,999/120,000 correct). The BHM achieved better balance, correctly classifying more Republican tweets (79,819/120,000) while maintaining strong Democrat performance. The significantly higher AUC (0.712 vs 0.638) confirms the BHM better captures class separability.
-
 ---
 
 ## Why Probabilistic Modeling?
 
-Traditional machine learning models (logistic regression, random forests) treat parameters as fixed unknowns. Bayesian probabilistic models treat parameters as random variables with uncertainty. This allows us to:
+Traditional machine learning models (logistic regression, random forests) treat parameters as fixed unknowns. Bayesian probabilistic models treat parameters as random variables with uncertainty. This allows for:
 
-1. **Quantify Uncertainty**: Posterior distributions reflect what we've learned and how confident we are
-2. **Incorporate Domain Knowledge**: Priors encode what we believe before seeing data
+1. **Quantify Uncertainty**: Posterior distributions reflect what was learned and how confident it is
+2. **Incorporate Domain Knowledge**: Priors encode what was believed before seeing data
 3. **Model Complex Relationships**: Hierarchical structures capture multi-level dependencies
 4. **Avoid Overfitting**: Regularization through priors and uncertainty quantification
 
 Pyro makes this accessible by automating variational inference, letting us focus on model design.
-
----
-
-## Quick Start
-
-### Prerequisites
-- Python 3.12
-- GPU recommended (NVIDIA RTX 3070 or better) but CPU works (slower)
-
-### Installation
-
-```bash
-# Clone or download this repository
-cd mbml_project
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Running the Notebook
-
-1. Ensure `data/hashtag_donaldtrump.csv` and `data/hashtag_joebiden.csv` are in the `data/` folder
-2. Open and run [Group15_final_notebook.ipynb](Group15_final_notebook.ipynb) top-to-bottom
-
-The notebook is self-contained and fully documented. Each section explains what it does and why.
-
----
-
-## Runtime Expectations
-
-**Total time: ~103 minutes on a modern desktop (i7-13700KF + RTX 3070)**
-- Data preprocessing: ~15 minutes
-- Model training: ~85 minutes (most time spent here via SVI)
-- Evaluation & visualization: ~3 minutes
-
-CPU-only systems will be significantly slower. Consider using a GPU or reducing dataset size for testing.
-
----
-
-## Project Structure
-
-```
-mbml_project/
-├── Group15_final_notebook.ipynb       # Main notebook (self-contained)
-├── README.md                          # This file
-├── requirements.txt                   # Dependencies
-├── data/
-│   ├── hashtag_donaldtrump.csv        # Raw Trump tweets
-│   └── hashtag_joebiden.csv           # Raw Biden tweets
-├── Model/
-│   └── First/                         # Saved model parameters
-│       ├── blr_params.pt
-│       ├── bhm_params.pt
-│       └── naive_bayes_params.pt
-└── Saved Results/
-    ├── Save 1/                        # Training & evaluation artifacts
-    │   ├── Models/
-    │   │   ├── blr_params.pt
-    │   │   └── bhm_params.pt
-    │   └── Results/
-    │       ├── Training/
-    │       │   ├── blr_model_results.pkl
-    │       │   └── bhm_model_results.pkl
-    │       └── Evaluation/
-    │           ├── blr_eval_results.pkl
-    │           └── bhm_eval_results.pkl
-    └── Save 2-7/                      # Previous runs
-```
 
 ---
 
@@ -214,10 +140,10 @@ The preprocessing pipeline and model architectures are deterministic given these
 
 This project demonstrates:
 1. **End-to-end ML pipeline**: Data → features → models → evaluation
-2. **Advanced probabilistic modeling**: Not just sklearn, but custom Bayesian design
+2. **Advanced probabilistic modeling**: Not just sklearn but custom Bayesian design
 3. **Thoughtful feature engineering**: Domain knowledge applied to NLP + sentiment analysis
 4. **Rigorous evaluation**: Multiple metrics, validation discipline, early stopping
-5. **Communication**: Clear documentation, visualizations, and narrative explanation
+5. **Communication**: Clear documentation, visualizations and narrative explanation
 
 ---
 
@@ -229,19 +155,3 @@ This project demonstrates:
 - **VADER Sentiment**: Lexicon-based sentiment analysis
 - **LDA (sklearn)**: Latent Dirichlet Allocation implementation
 
----
-
-## License
-
-This project is provided as-is for educational and portfolio purposes.
-
----
-
-## Questions?
-
-If you run the notebook and have questions, check:
-1. Do you have the data files in `data/`?
-2. Are all dependencies installed? Run `pip list | grep -E "torch|pyro|sklearn|pandas"`
-3. Does your GPU have enough memory? (8GB+ recommended for full dataset)
-
-Feel free to modify the notebook for experiments or adjust hyperparameters for faster runs!
